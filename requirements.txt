@@ -1,7 +1,7 @@
-langchain==0.1.19
-yfinance==0.2.41
-crewai==0.28.8
+langchain==0.2.41
+yfinance==0.28.8
+crewai==0.1.20
 langchain-openai==0.1.7
 langchain-community==0.0.38
 duckduckgo-search==5.3.0
-pysqlite-binary==0.4.6
+pysqlite-binary
