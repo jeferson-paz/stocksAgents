@@ -1,6 +1,7 @@
-#IMPORT DAS LIBS
+# IMPORT DAS LIBS
 import json
 import os
+import traceback
 from datetime import datetime
 
 import yfinance as yf
@@ -15,157 +16,120 @@ import streamlit as st
 
 # CRIANDO YAHOO FINANCE TOOL
 def fetch_stock_price(ticket):
-    sotock = yf.download("AAPL", start="2023-08-08", end="2024-08-08")
-    return sotock
+    try:
+        stock = yf.download(ticket, start="2023-08-08", end="2024-08-08")
+        return stock
+    except Exception as e:
+        st.error(f"Error fetching stock price: {e}")
+        return None
 
 yahoo_finance_tool = Tool(
-    name = "Yahoo Finance Tool",
-    description = "Fetches stocks prices for {ticket} from the last year about a specific company from yahoo Finance API",
-    func = lambda ticket: fetch_stock_price(ticket)
+    name="Yahoo Finance Tool",
+    description="Fetches stock prices for {ticket} from the last year about a specific company from Yahoo Finance API",
+    func=lambda ticket: fetch_stock_price(ticket)
 )
 
 # IMPORTANDO OPENAI LLM - GPT
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-
-# In[34]:
-
-
-stockPriceAnalyst = Agent (
+# AGENT: Stock Price Analyst
+stockPriceAnalyst = Agent(
     role="Senior stock price Analyst",
-    goal="Find the {ticket} stock price and analyses trends",
-    backstory="""You're a highly experienced in analyzing the price of an specific stock
-    and make predictions about its future price.""",
+    goal="Find the {ticket} stock price and analyze trends",
+    backstory="""You're highly experienced in analyzing the price of a specific stock and making predictions about its future price.""",
     verbose=True,
-    llm= llm,
-    max_iter= 5,
-    memory= True,
+    llm=llm,
+    max_iter=5,
+    memory=True,
     tools=[yahoo_finance_tool],
-    allow_delegation =False
+    allow_delegation=False
 )
 
-
-# In[35]:
-
-
+# TASK: Get Stock Price
 getStockPrice = Task(
-    description= "Analyze the sotock {ticket} price history and create a trend analyses of up, down or sideways",
-    expected_output = """ Specify the current trend stock price - up, down or sideways.
-    eg. stock= 'APPL, price UP'""",
-    agent= stockPriceAnalyst
+    description="Analyze the stock {ticket} price history and create a trend analysis of up, down, or sideways",
+    expected_output="""Specify the current trend stock price - up, down, or sideways.
+    eg. stock= 'AAPL, price UP'""",
+    agent=stockPriceAnalyst
 )
 
-
-# In[36]:
-
-
-#IMPORTANDO A TOOL DE SEARCH
+# IMPORTANDO A TOOL DE SEARCH
 search_tool = DuckDuckGoSearchResults(backend='news', num_results=10)
 
-
-# In[37]:
-
-
+# AGENT: News Analyst
 newsAnalyst = Agent(
     role="Stock News Analyst",
-    goal="""Create a short summary of the market news related to the stock {ticket} company. Specify the current trend - up, down or sideways with the news context.
-    For each request stock asset, specify a numbet between 0 and 100, where 0 is
-    extreme fear and 100 is extreme greed.""",
-    backstory="""You're highly experienced in analyzing the market trends and news and have tracked assest for more the 10 years.
-
-    You're also master level analyts in the tradicional markets and have deep understanding of human psychology.
-
-    You understand news, theirs tittles and information, but you look at those with a health dose os skepticism.
-    You consider also the source of the news articles.
-    """,
+    goal="""Create a short summary of the market news related to the stock {ticket} company. Specify the current trend - up, down, or sideways with the news context.
+    For each request stock asset, specify a number between 0 and 100, where 0 is extreme fear and 100 is extreme greed.""",
+    backstory="""You're highly experienced in analyzing market trends and news and have tracked assets for more than 10 years.
+    You're also a master-level analyst in the traditional markets and have a deep understanding of human psychology.
+    You understand news, their titles, and information but look at them with a healthy dose of skepticism.
+    You also consider the source of the news articles.""",
     verbose=True,
-    llm= llm,
-    max_iter= 10,
-    memory= True,
+    llm=llm,
+    max_iter=10,
+    memory=True,
     tools=[search_tool],
-    allow_delegation =False
+    allow_delegation=False
 )
 
-
-# In[38]:
-
-
+# TASK: Get News
 get_news = Task(
-    description= f"""Take the stock and always include BTC to it (if not request).
+    description=f"""Take the stock and always include BTC to it (if not requested).
     Use the search tool to search each one individually.
-
     The current date is {datetime.now()}.
-
-    Compose the results into a helpfull report""",
-    expected_output = """"A summary of the overall market and one sentence summary for each request asset.
+    Compose the results into a helpful report""",
+    expected_output="""A summary of the overall market and one-sentence summary for each requested asset.
     Include a fear/greed score for each asset based on the news. Use format:
     <STOCK ASSET>
     <SUMMARY BASED ON NEWS>
     <TREND PREDICTION>
-    <FEAR/GREED SCORE>
-    """,
-    agent= newsAnalyst
+    <FEAR/GREED SCORE>""",
+    agent=newsAnalyst
 )
 
-
-# In[39]:
-
-
+# AGENT: Stock Analyst Writer
 stockAnalystWrite = Agent(
     role="Senior Stock Analyst Writer",
-    goal= """"Analyze the trends price and news and write an insighfull compelling and informative 3 paragraph long newsletter based on the stock report and price trend. """,
-    backstory="""You're widely accepted as the best stock analyst in the market. You understand complex concepts and create compelling stories
-    and narratives that resonate with wider audiences.
-
-    You understand macro factors and combine multiple theories - eg. cycle theory and fundamental analyses.
-    You're able to hold multiple opinions when analyzing anything.
-    """,
+    goal="""Analyze the trends in price and news and write an insightful, compelling, and informative 3-paragraph long newsletter based on the stock report and price trend.""",
+    backstory="""You're widely accepted as the best stock analyst in the market. You understand complex concepts and create compelling stories and narratives that resonate with wider audiences.
+    You understand macro factors and combine multiple theories - e.g., cycle theory and fundamental analysis.
+    You're able to hold multiple opinions when analyzing anything.""",
     verbose=True,
-    llm= llm,
-    max_iter= 5,
-    memory= True,
-    allow_delegation = True
+    llm=llm,
+    max_iter=5,
+    memory=True,
+    allow_delegation=True
 )
 
-
-# In[40]:
-
-
+# TASK: Write Analysis
 writeAnalyses = Task(
-    description = """Use the stock price trend and stock news report to create an analyses and write the newsletter about the {ticket} company
-    that is brief and highlights the most important points.
-    Focus on the stock price trend, news and fear/greed score. What are near future considerations?
-    Include the previous analyses of stock trend and news summary.
-    """,
-    expected_output= """"An eloquent 3 paragraphs newsletter formated as markdown in an easy readable manner. It should contain:
-
+    description="""Use the stock price trend and stock news report to create an analysis and write the newsletter about the {ticket} company
+    that is brief and highlights the most important points. Focus on the stock price trend, news, and fear/greed score. What are near future considerations?
+    Include the previous analysis of stock trend and news summary.""",
+    expected_output="""An eloquent 3-paragraph newsletter formatted as markdown in an easy-to-read manner. It should contain:
     - 3 bullets executive summary
     - Introduction - set the overall picture and spike up the interest
-    - main part provides the meat of the analysis including the news summary and fead/greed scores
-    - summary - key facts and concrete future trend prediction - up down or sideways.
-    """,
-    agent = stockAnalystWrite,
-    context = [getStockPrice, get_news]
+    - Main part provides the meat of the analysis including the news summary and fear/greed scores
+    - Summary - key facts and concrete future trend prediction - up, down, or sideways.""",
+    agent=stockAnalystWrite,
+    context=[getStockPrice, get_news]
 )
 
-
-# In[41]:
-
-
+# CRIANDO A EQUIPE
 crew = Crew(
-    agents = [stockPriceAnalyst,newsAnalyst, stockAnalystWrite],
-    tasks = [getStockPrice, get_news, writeAnalyses],
-    verbose = 2,
-    process = Process.hierarchical ,
+    agents=[stockPriceAnalyst, newsAnalyst, stockAnalystWrite],
+    tasks=[getStockPrice, get_news, writeAnalyses],
+    verbose=2,
+    process=Process.hierarchical,
     full_output=True,
     share_crew=False,
     manager_llm=llm,
     max_iter=15
 )
 
-# results= crew.kickoff(inputs={'ticket':'AAPL'})
-
+# CONFIGURANDO STREAMLIT
 with st.sidebar:
     st.header('Enter the Stock to Research')
 
@@ -177,8 +141,11 @@ if submit_button:
     if not topic:
         st.error("Please fill the ticket field")
     else:
-
-        results = crew.kickoff(inputs={'ticket': topic})
-
-        st.subheader("Results of your research:")
-        st.write(results['final_output'])
+        st.write("Fetching results for ticket:", topic)
+        try:
+            results = crew.kickoff(inputs={'ticket': topic})
+            st.subheader("Results of your research:")
+            st.write(results['final_output'])
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            st.write(f"Full traceback: {traceback.format_exc()}")
