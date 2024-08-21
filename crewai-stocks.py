@@ -78,7 +78,7 @@ newsAnalyst = Agent(
 get_news = Task(
     description=f"""Take the stock and always include BTC to it (if not requested).
     Use the search tool to search each one individually.
-    The current date is {datetime.now()}.
+    The current date is {datetime.now().strftime("%Y-%m-%d")}.
     Compose the results into a helpful report""",
     expected_output="""A summary of the overall market and one-sentence summary for each requested asset.
     Include a fear/greed score for each asset based on the news. Use format:
@@ -143,6 +143,8 @@ if submit_button:
     else:
         st.write("Fetching results for ticket:", topic)
         try:
+            # Debug: Verificar entradas antes do kickoff
+            st.write("Starting kickoff with input:", {'ticket': topic})
             results = crew.kickoff(inputs={'ticket': topic})
             st.subheader("Results of your research:")
             st.write(results['final_output'])
