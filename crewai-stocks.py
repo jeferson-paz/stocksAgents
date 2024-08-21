@@ -17,13 +17,16 @@ import streamlit as st
 # CRIANDO YAHOO FINANCE TOOL
 def fetch_stock_price(ticket):
     try:
-        st.write(f"Fetching stock price for ticket: {ticket}")  # Log de entrada
-        stock = yf.download(ticket, start="2023-08-08", end="2024-08-08")
+        st.write(f"Fetching stock price for ticket: {ticket}")
+        start_date = datetime.now() - timedelta(days=365)  # Use data dos últimos 12 meses
+        end_date = datetime.now()
+        stock = yf.download(ticket, start=start_date.strftime("%Y-%m-%d"), end=end_date.strftime("%Y-%m-%d"))
         if stock.empty:
             st.warning(f"No data found for ticket: {ticket}")
+            return None
         else:
-            st.write(f"Data fetched for {ticket}: {stock.head()}")  # Log de dados
-        return stock
+            st.write(f"Data fetched for {ticket}: {stock.head()}")
+            return stock
     except Exception as e:
         st.error(f"Error fetching stock price: {e}")
         return None
