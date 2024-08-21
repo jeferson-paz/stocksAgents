@@ -5,3 +5,4 @@ langchain-openai
 langchain-community
 duckduckgo-search
 pysqlite3-binary
+pydantic
