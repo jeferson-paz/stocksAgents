@@ -4,4 +4,4 @@ crewai
 langchain-openai
 langchain-community
 duckduckgo-search
-pysqlite-binary
+pysqlite3-binary
