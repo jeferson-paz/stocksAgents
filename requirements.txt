@@ -4,4 +4,4 @@ crewai>=0.1.0
 langchain-openai>=0.0.3
 langchain-community>=0.0.5
 duckduckgo-search
-pysqlite-binary>=3.35
+pysqlite-binary>=3.25
