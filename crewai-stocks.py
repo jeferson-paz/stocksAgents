@@ -17,7 +17,12 @@ import streamlit as st
 # CRIANDO YAHOO FINANCE TOOL
 def fetch_stock_price(ticket):
     try:
+        st.write(f"Fetching stock price for ticket: {ticket}")  # Log de entrada
         stock = yf.download(ticket, start="2023-08-08", end="2024-08-08")
+        if stock.empty:
+            st.warning(f"No data found for ticket: {ticket}")
+        else:
+            st.write(f"Data fetched for {ticket}: {stock.head()}")  # Log de dados
         return stock
     except Exception as e:
         st.error(f"Error fetching stock price: {e}")
@@ -146,8 +151,10 @@ if submit_button:
             # Debug: Verificar entradas antes do kickoff
             st.write("Starting kickoff with input:", {'ticket': topic})
             results = crew.kickoff(inputs={'ticket': topic})
+            st.write("Raw results:", results)  # Log de resultados brutos
+            final_output = results.get('final_output', 'No final output found')
             st.subheader("Results of your research:")
-            st.write(results.get('final_output', 'No final output found'))
+            st.write(final_output)
         except Exception as e:
             st.error(f"An error occurred: {e}")
             st.write(f"Full traceback: {traceback.format_exc()}")
