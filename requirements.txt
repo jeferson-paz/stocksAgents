@@ -1,7 +1,7 @@
-langchain
-yfinance
-crewai
-langchain-openai
-langchain-community
+langchain>=0.0.100
+yfinance>=0.2.18
+crewai>=0.1.0
+langchain-openai>=0.0.3
+langchain-community>=0.0.5
 duckduckgo-search
-pysqlite-binary
+pysqlite-binary>=3.35
