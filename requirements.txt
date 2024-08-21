@@ -6,3 +6,5 @@ langchain-community
 duckduckgo-search
 pysqlite3-binary
 pydantic
+streamlit
+openai
