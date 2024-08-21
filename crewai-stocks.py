@@ -2,7 +2,7 @@
 import json
 import os
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import yfinance as yf
 
@@ -154,8 +154,8 @@ if submit_button:
             # Debug: Verificar entradas antes do kickoff
             st.write("Starting kickoff with input:", {'ticket': topic})
             results = crew.kickoff(inputs={'ticket': topic})
-            st.write("Raw results:", results)  # Log de resultados brutos
-            final_output = results.get('final_output', 'No final output found')
+            st.write("Raw results:", results)
+            final_output = results.final_output if hasattr(results, 'final_output') else 'No final output found'
             st.subheader("Results of your research:")
             st.write(final_output)
         except Exception as e:
