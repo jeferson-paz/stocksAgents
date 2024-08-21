@@ -121,7 +121,7 @@ writeAnalyses = Task(
 crew = Crew(
     agents=[stockPriceAnalyst, newsAnalyst, stockAnalystWrite],
     tasks=[getStockPrice, get_news, writeAnalyses],
-    verbose=True,  # Alterado de 2 para True
+    verbose=True,
     process=Process.hierarchical,
     full_output=True,
     share_crew=False,
@@ -147,7 +147,7 @@ if submit_button:
             st.write("Starting kickoff with input:", {'ticket': topic})
             results = crew.kickoff(inputs={'ticket': topic})
             st.subheader("Results of your research:")
-            st.write(results['final_output'])
+            st.write(results.get('final_output', 'No final output found'))
         except Exception as e:
             st.error(f"An error occurred: {e}")
             st.write(f"Full traceback: {traceback.format_exc()}")
