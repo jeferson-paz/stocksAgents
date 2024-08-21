@@ -154,10 +154,25 @@ if submit_button:
             # Debug: Verificar entradas antes do kickoff
             st.write("Starting kickoff with input:", {'ticket': topic})
             results = crew.kickoff(inputs={'ticket': topic})
+
+            # Verificar o tipo e conteúdo de 'results'
             st.write("Raw results:", results)
-            final_output = results.final_output if hasattr(results, 'final_output') else 'No final output found'
+            
+            if hasattr(results, 'final_output'):
+                final_output = results.final_output
+            else:
+                final_output = 'No final output found'
+            
             st.subheader("Results of your research:")
             st.write(final_output)
+        
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            # Exibir mensagem de erro com traceback completo
+            st.error(f"An error occurred: {str(e)}")
             st.write(f"Full traceback: {traceback.format_exc()}")
+
+            # Informações adicionais para depuração
+            st.write("Debug Info:")
+            st.write("Inputs provided:", {'ticket': topic})
+            st.write("Results object type:", type(results))
+            st.write("Results content (if available):", results if results else "No results object")
