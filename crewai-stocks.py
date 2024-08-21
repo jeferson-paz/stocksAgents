@@ -28,6 +28,10 @@ yahoo_finance_tool = Tool(
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 
+
+# In[34]:
+
+
 stockPriceAnalyst = Agent (
     role="Senior stock price Analyst",
     goal="Find the {ticket} stock price and analyses trends",
@@ -41,6 +45,10 @@ stockPriceAnalyst = Agent (
     allow_delegation =False
 )
 
+
+# In[35]:
+
+
 getStockPrice = Task(
     description= "Analyze the sotock {ticket} price history and create a trend analyses of up, down or sideways",
     expected_output = """ Specify the current trend stock price - up, down or sideways.
@@ -48,8 +56,16 @@ getStockPrice = Task(
     agent= stockPriceAnalyst
 )
 
+
+# In[36]:
+
+
 #IMPORTANDO A TOOL DE SEARCH
 search_tool = DuckDuckGoSearchResults(backend='news', num_results=10)
+
+
+# In[37]:
+
 
 newsAnalyst = Agent(
     role="Stock News Analyst",
@@ -71,6 +87,10 @@ newsAnalyst = Agent(
     allow_delegation =False
 )
 
+
+# In[38]:
+
+
 get_news = Task(
     description= f"""Take the stock and always include BTC to it (if not request).
     Use the search tool to search each one individually.
@@ -88,6 +108,10 @@ get_news = Task(
     agent= newsAnalyst
 )
 
+
+# In[39]:
+
+
 stockAnalystWrite = Agent(
     role="Senior Stock Analyst Writer",
     goal= """"Analyze the trends price and news and write an insighfull compelling and informative 3 paragraph long newsletter based on the stock report and price trend. """,
@@ -103,6 +127,10 @@ stockAnalystWrite = Agent(
     memory= True,
     allow_delegation = True
 )
+
+
+# In[40]:
+
 
 writeAnalyses = Task(
     description = """Use the stock price trend and stock news report to create an analyses and write the newsletter about the {ticket} company
@@ -121,6 +149,10 @@ writeAnalyses = Task(
     context = [getStockPrice, get_news]
 )
 
+
+# In[41]:
+
+
 crew = Crew(
     agents = [stockPriceAnalyst,newsAnalyst, stockAnalystWrite],
     tasks = [getStockPrice, get_news, writeAnalyses],
@@ -131,6 +163,8 @@ crew = Crew(
     manager_llm=llm,
     max_iter=15
 )
+
+# results= crew.kickoff(inputs={'ticket':'AAPL'})
 
 with st.sidebar:
     st.header('Enter the Stock to Research')
